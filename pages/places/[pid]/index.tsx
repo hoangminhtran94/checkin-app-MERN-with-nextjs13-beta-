@@ -1,8 +1,6 @@
-"use client";
-
 import React, { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
+import { useRouter } from "next/router";
 import type { RootState } from "../../../store";
 import { Place } from "../../../models/Place.models";
 import classes from "./UpdatePlace.module.css";
@@ -15,11 +13,11 @@ import {
 import { useForm } from "../../../components/shared/hooks/form-hook";
 import Card from "../../../components/shared/UIElements/Card/Card";
 
-const UpdatePlace: React.FC = () => {
+const UpdatePlace = () => {
   const [loading, setLoading] = useState(true);
-  const path = usePathname();
   const places = useSelector<RootState, Place[]>((state) => state.place.places);
-  const placeId = path.slice(8, path.length);
+  const router = useRouter();
+  const placeId = router.query.pid;
   const identifiedPlace = useMemo(
     () => places.find((place) => place.id === placeId),
     [placeId, places]

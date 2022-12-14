@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import classes from "./NewPlace.module.css";
 import Input from "../../../components/shared/FormElements/Input/Input";
@@ -10,7 +8,7 @@ import {
 import Button from "../../../components/shared/FormElements/Button/Button";
 import { useForm } from "../../../components/shared/hooks/form-hook";
 
-const NewPlace: React.FC = () => {
+const NewPlace = () => {
   const { formState, inputHandler } = useForm(
     {
       title: { value: "", isValid: false },

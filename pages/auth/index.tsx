@@ -10,7 +10,7 @@ import {
   VALIDATOR_MINLENGTH,
 } from "../../components/shared/utils/validators";
 import { useForm } from "../../components/shared/hooks/form-hook";
-const Auth: React.FC = () => {
+const Auth = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const { formState, inputHandler, setFormState } = useForm(
     {

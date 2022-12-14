@@ -1,7 +1,4 @@
-"use client";
-
 import React from "react";
-import "../styles/globals.css";
 import UsersList from "../components/user/UsersList/UsersList";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../store";

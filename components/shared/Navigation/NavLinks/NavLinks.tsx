@@ -1,6 +1,5 @@
 import React from "react";
 import classes from "./NavLinks.module.css";
-import Link from "next/link";
 import NavLink from "../NavLink/NavLink";
 
 const NavLinks: React.FC = () => {

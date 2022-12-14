@@ -1,5 +1,5 @@
 import React from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import classes from "./NavLink.module.css";
 interface NavLinkProps {
@@ -8,10 +8,15 @@ interface NavLinkProps {
   pathname?: string;
 }
 const NavLink: React.FC<NavLinkProps> = ({ href, children, pathname }) => {
-  const path = usePathname();
+  const router = useRouter();
+
   return (
     <Link
-      className={path === pathname || path === href ? classes["active"] : ""}
+      className={
+        router.pathname === pathname || router.pathname === href
+          ? classes["active"]
+          : ""
+      }
       href={href}
     >
       {children}
