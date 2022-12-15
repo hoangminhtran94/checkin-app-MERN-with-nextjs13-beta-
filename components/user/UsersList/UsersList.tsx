@@ -11,8 +11,8 @@ interface UserListProps {
 const UsersList: React.FC<UserListProps> = ({ items }) => {
   if (items.length === 0) {
     return (
-      <Card>
-        <h1 className={classes["center"]}>No users found</h1>
+      <Card className={classes["users-list"]}>
+        <h1 className="center">No users found</h1>
       </Card>
     );
   }
@@ -24,7 +24,7 @@ const UsersList: React.FC<UserListProps> = ({ items }) => {
           id={user.id}
           image={user.image}
           name={user.name}
-          placeCount={user.places}
+          placeCount={user.places.length}
         />
       ))}
     </ul>

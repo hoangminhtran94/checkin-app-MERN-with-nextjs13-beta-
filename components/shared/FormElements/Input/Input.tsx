@@ -96,7 +96,9 @@ const Input: React.FC<InputProps> = (props) => {
     >
       <label htmlFor={props.id}>{props.label}</label>
       {element}
-      {!inputState.isValid && inputState.touched && <p>{props.errorText}</p>}
+      {!inputState.isValid && inputState.touched && (
+        <p className={classes["invalid-message"]}>{props.errorText}</p>
+      )}
     </div>
   );
 };

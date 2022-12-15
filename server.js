@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const placesRoutes = require("./server-routes/place-routes");
@@ -8,9 +9,17 @@ const HttpError = require("./server-models/HttpError/HttpError.model");
 const app = express();
 
 app.use(bodyParser.json());
-// add custom path here
-// server.post('/request/custom', custom);
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Request-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+  next();
+});
+// add custom path here
 app.use("/api/places", placesRoutes);
 app.use("/api/users", userRoutes);
 
@@ -27,9 +36,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://hihi123em:AzmGm52p1xniuSRH@cluster0.3ud5jrv.mongodb.net/place?retryWrites=true&w=majority"
-  )
+  .connect(`${process.env.MONGODB_URI}`)
   .then(() => {
     app.listen(5000, (err) => {
       if (err) throw err;

@@ -2,6 +2,30 @@
   color: white;
   text-align: center;
 }
+.error-message {
+  color: red;
+  position: relative;
+  width: 80%;
+  margin: 0 auto;
+}
+.error-message::after {
+  content: "";
+  height: 3px;
+  border-radius: 8px;
+  background: red;
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  animation: shink 3s ease-in-out;
+}
+@keyframes shink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
 
 .authentication {
   width: 90%;
@@ -9,7 +33,22 @@
   margin: 7rem auto !important;
   text-align: center;
 }
-
+.file-upload-controller {
+  display: flex;
+  flex-direction: column;
+}
+.file-upload-controller p {
+  margin: 0;
+  font-size: small;
+}
 .authentication form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
   margin-bottom: 1rem;
+  gap: 1rem;
+}
+.upload-button,
+.login-button {
+  margin: 0 auto;
 }

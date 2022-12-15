@@ -1,5 +1,14 @@
 .active {
-  background: #f8df00 !important;
-  border-color: #292929 !important;
+  position: relative;
   color: #292929 !important;
+}
+.active::after {
+  content: "";
+  width: 90%;
+  height: 3px;
+  border-radius: 8px;
+  background: rgb(44, 26, 126);
+  position: absolute;
+  bottom: -5px;
+  left: 5%;
 }

@@ -5,6 +5,7 @@ import classes from "./Button.module.css";
 interface ButtonProps {
   href?: string;
   size?: string;
+  className?: string;
   inverse?: boolean;
   danger?: boolean;
   children: React.ReactNode;
@@ -49,7 +50,7 @@ const Button: React.FC<ButtonProps> = (props) => {
         classes[`button--${props.size || "default"}`]
       } ${props.inverse && classes["button--inverse"]} ${
         props.danger && classes["button--danger"]
-      }`}
+      } ${props.className ? props.className : ""}`}
       type={props.type}
       onClick={props.onClick}
       disabled={props.disabled}

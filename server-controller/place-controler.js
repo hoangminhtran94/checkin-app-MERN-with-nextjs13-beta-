@@ -1,38 +1,9 @@
-const uuid = require("uuid");
 const { validationResult } = require("express-validator");
 const { getCoordsForAddress } = require("../server-utils/location");
 const HttpError = require("../server-models/HttpError/HttpError.model");
 const Place = require("../server-models/Place/Place.model");
-
-let DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous sky scrapers in the world!",
-    imageUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
-    address: "20 W 34th St, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Empire State Building",
-    description: "One of the most famous sky scrapers in the world!",
-    imageUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
-    address: "20 W 34th St, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u2",
-  },
-];
-
+const User = require("../server-models/User/User.model");
+const { default: mongoose } = require("mongoose");
 exports.getAllPlaces = async (req, res, next) => {
   const places = await Place.find();
   res.status(200).json(places);
@@ -70,7 +41,7 @@ exports.createPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid inputs, please check your data!", 422));
   }
-  const { title, description, address, creator, imageUrl } = req.body;
+  const { title, description, address, imageUrl, creator } = req.body;
   let location;
   try {
     location = await getCoordsForAddress(address);
@@ -86,8 +57,29 @@ exports.createPlace = async (req, res, next) => {
     creator,
     imageUrl,
   });
+
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
+  } catch (error) {
+    return next(
+      new HttpError(
+        "Something went wrong when finding user, please try again",
+        404
+      )
+    );
+  }
+  if (!user) {
+    return next(new HttpError("User does not exist.", 403));
+  }
+
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await createdPlace.save({ session });
+    user.places.push(createdPlace);
+    await user.save({ session });
+    await session.commitTransaction();
   } catch (error) {
     return next(error);
   }
@@ -123,13 +115,22 @@ exports.deletePlaceById = async (req, res, next) => {
   const pid = req.params.pid;
   let place;
   try {
-    place = await Place.findById(pid);
+    place = await Place.findById(pid).populate("creator");
   } catch (error) {
-    return next(new HttpError("Place is not found", 404));
+    return next(new HttpError("Something went wrong", 500));
+  }
+
+  if (!place) {
+    return next(new HttpError("Place does not exist", 422));
   }
 
   try {
-    await place.remove();
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await place.remove({ session });
+    place.creator.places.pull(place);
+    await place.creator.save({ session });
+    session.commitTransaction();
   } catch (error) {
     return next(new HttpError("Something went wrong when deleting the data"));
   }

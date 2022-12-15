@@ -1,7 +1,16 @@
-import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
+import {
+  Action,
+  AnyAction,
+  configureStore,
+  ThunkAction,
+  ThunkDispatch,
+} from "@reduxjs/toolkit";
 import userReducer from "./user";
 import placeReducer from "./place";
+import authReducer from "./auth";
+import actionStatusReducer from "./actionStatus";
 import { createWrapper, Context, HYDRATE } from "next-redux-wrapper";
+import { useDispatch } from "react-redux";
 
 const makeStore = () => {
   let middleware = [];
@@ -9,6 +18,8 @@ const makeStore = () => {
     reducer: {
       user: userReducer,
       place: placeReducer,
+      auth: authReducer,
+      actionStatus: actionStatusReducer,
     },
     devTools: true,
     middleware: (getDefaultMiddleware) =>
@@ -26,5 +37,7 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action
 >;
+export type TypedDispatch = ThunkDispatch<RootState, any, AnyAction>;
+export const useTypedDispatch = () => useDispatch<TypedDispatch>();
 export const wrapper = createWrapper<AppStore>(makeStore, { debug: true });
 export const store = makeStore();

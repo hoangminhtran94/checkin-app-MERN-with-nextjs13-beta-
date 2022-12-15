@@ -1,4 +1,3 @@
-const uuid = require("uuid");
 const HttpError = require("../server-models/HttpError/HttpError.model");
 const { validationResult } = require("express-validator");
 const User = require("../server-models/User/User.model");
@@ -19,7 +18,7 @@ exports.signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid inputs, please check your data!", 422));
   }
-  const { name, email, password, places, image } = req.body;
+  const { name, email, password, image } = req.body;
 
   let existingUser;
   try {
@@ -35,7 +34,7 @@ exports.signup = async (req, res, next) => {
     );
   }
 
-  const createdUser = new User({ name, email, password, places, image });
+  const createdUser = new User({ name, email, password, places: [], image });
 
   try {
     await createdUser.save();
@@ -48,7 +47,7 @@ exports.signup = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password: loginPassword } = req.body;
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -60,9 +59,11 @@ exports.login = async (req, res, next) => {
   if (!existingUser) {
     return next(new HttpError("Email did not exist, please try again", 422));
   }
-  if (existingUser.password !== password) {
+  if (existingUser.password !== loginPassword) {
     return next(new HttpError("Password is incorrect, please try again", 422));
   }
 
-  res.json({ message: "Logged in" });
+  const user = existingUser.toObject({ getters: true });
+  const { password, ...returnUser } = user;
+  res.json({ user: returnUser });
 };
