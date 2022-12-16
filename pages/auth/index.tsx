@@ -1,9 +1,9 @@
-"use client";
 import React, { useState, useRef, useEffect } from "react";
 import Card from "../../components/shared/UIElements/Card/Card";
 import classes from "./Auth.module.css";
 import Input from "../../components/shared/FormElements/Input/Input";
 import Button from "../../components/shared/FormElements/Button/Button";
+import ImageUpload from "../../components/shared/ImageUpload/ImageUpload";
 import { authActions } from "../../store/auth";
 import {
   VALIDATOR_EMAIL,
@@ -30,13 +30,9 @@ const Auth = () => {
     },
     false
   );
-  const [imageData, setImageData] = useState<{
-    image: string;
-    file: File | null;
-  }>({ image: "", file: null });
-  const inputRef = useRef<HTMLInputElement>(null);
   const authSubmitHandler = async (event: React.FormEvent) => {
     event.preventDefault();
+
     try {
       setIsLoading(true);
       let response = null;
@@ -50,16 +46,14 @@ const Auth = () => {
           }),
         });
       } else {
+        const formData = new FormData();
+        formData.append("name", formState.inputs.name.value);
+        formData.append("email", formState.inputs.email.value);
+        formData.append("password", formState.inputs.password.value);
+        formData.append("image", formState.inputs.image.value);
         response = await fetch("http://localhost:5000/api/users/signup", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formState.inputs.name.value,
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
-            image:
-              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmFuZG9tJTIwcGVyc29ufGVufDB8fDB8fA%3D%3D&w=1000&q=80",
-          }),
+          body: formData,
         });
       }
       if (response.status >= 400) {
@@ -76,6 +70,7 @@ const Auth = () => {
       setIsLoading(false);
       router.push("/");
     } catch (error) {
+      console.log(error);
       setIsLoading(false);
       dispatchThunk(toggleErrorToast(error.message));
     }
@@ -86,6 +81,7 @@ const Auth = () => {
         {
           ...formState.inputs,
           name: { value: "", isValid: false },
+          image: { value: null, isValid: false },
         },
         false
       );
@@ -94,6 +90,7 @@ const Auth = () => {
         {
           ...formState.inputs,
           name: undefined,
+          image: undefined,
         },
         formState.inputs.email!.isValid && formState.inputs.password!.isValid
       );
@@ -139,35 +136,7 @@ const Auth = () => {
           validators={[VALIDATOR_MINLENGTH(6)]}
           onInput={inputHandler}
         />
-        {!isLoginMode && (
-          <div className={classes["file-upload-controller"]}>
-            <Button
-              className={classes["upload-button"]}
-              inverse
-              type="button"
-              size="small"
-              onClick={() => {
-                inputRef.current.click();
-              }}
-            >
-              Choose an image
-              <input
-                ref={inputRef}
-                style={{ display: "none" }}
-                type="file"
-                onChange={(e) => {
-                  setImageData({
-                    file: e.target.files[0],
-                    image: e.target.files[0].name,
-                  });
-                }}
-                accept={".jpg,.jpeg,.png"}
-                placeholder="Upload profile image"
-              />
-            </Button>
-            {imageData.image && <p className="File name">{imageData.image}</p>}
-          </div>
-        )}
+        {!isLoginMode && <ImageUpload id="image" onInput={inputHandler} />}
         <Button
           size="small"
           className={classes["login-button"]}

@@ -46,12 +46,10 @@ const PlaceItem: React.FC<PlaceItemProps> = ({
         <Card className={classes["place-item__content"]}>
           <div className={classes["place-item__image"]}>
             <Image
-              src={image}
+              src={"http://localhost:5000/" + image}
               alt={title}
-              width="0"
-              height="0"
-              sizes="100vw"
-              style={{ width: "100%", height: "100%" }}
+              width={640}
+              height={320}
             />
           </div>
           <div className={classes["place-item__info"]}>

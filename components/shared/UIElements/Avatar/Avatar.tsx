@@ -19,7 +19,12 @@ const Avatar: React.FC<AvatarProps> = ({
 }) => {
   return (
     <div className={`${classes["avatar"]} ${className}`} style={style}>
-      <Image src={image} alt={alt} width={width} height={width} />
+      <Image
+        src={"http://localhost:5000/" + image}
+        alt={alt}
+        width={width}
+        height={width}
+      />
     </div>
   );
 };

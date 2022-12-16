@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { AnyAction } from "redux";
+import { AnyAction } from "@reduxjs/toolkit";
 import type { RootState } from "./index";
-import { ThunkAction } from "redux-thunk";
+import { ThunkAction } from "@reduxjs/toolkit";
 
 interface ActionStatusState {
   status: string;

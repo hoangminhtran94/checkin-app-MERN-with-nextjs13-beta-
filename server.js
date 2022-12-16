@@ -1,15 +1,16 @@
 const express = require("express");
 require("dotenv").config();
 const mongoose = require("mongoose");
+const path = require("path");
 const bodyParser = require("body-parser");
 const placesRoutes = require("./server-routes/place-routes");
 const userRoutes = require("./server-routes/user-routes");
 const HttpError = require("./server-models/HttpError/HttpError.model");
-
+const fs = require("fs");
 const app = express();
 
 app.use(bodyParser.json());
-
+app.use("/uploads/images", express.static(path.join("uploads", "images")));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -28,6 +29,11 @@ app.use((req, res, next) => {
   next(error);
 });
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, (error) => {
+      console.log(error);
+    });
+  }
   if (res.headerSent) {
     return next(error);
   }

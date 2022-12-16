@@ -9,11 +9,10 @@ interface NavLinkProps {
 }
 const NavLink: React.FC<NavLinkProps> = ({ href, children, pathname }) => {
   const router = useRouter();
-
   return (
     <Link
       className={
-        router.pathname === pathname || router.pathname === href
+        router.pathname === pathname || router.asPath === href
           ? classes["active"]
           : ""
       }

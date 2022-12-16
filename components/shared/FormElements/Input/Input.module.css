@@ -29,7 +29,12 @@
   font-size: 12px;
   color: #ccc;
 }
-.form-control--invalid input::placeholder {
+.form-control textarea::placeholder {
+  font-size: 12px;
+  color: #ccc;
+}
+.form-control--invalid input::placeholder,
+.form-control--invalid textarea::placeholder {
   color: rgb(236, 134, 134);
 }
 .form-control input:focus,

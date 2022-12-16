@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const { getCoordsForAddress } = require("../server-utils/location");
+
 const HttpError = require("../server-models/HttpError/HttpError.model");
 const Place = require("../server-models/Place/Place.model");
 const User = require("../server-models/User/User.model");
@@ -41,7 +42,7 @@ exports.createPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid inputs, please check your data!", 422));
   }
-  const { title, description, address, imageUrl, creator } = req.body;
+  const { title, description, address, creator } = req.body;
   let location;
   try {
     location = await getCoordsForAddress(address);
@@ -55,7 +56,7 @@ exports.createPlace = async (req, res, next) => {
     location,
     address,
     creator,
-    imageUrl,
+    imageUrl: req.file.path,
   });
 
   let user;

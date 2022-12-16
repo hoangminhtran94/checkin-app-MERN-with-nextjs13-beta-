@@ -9,7 +9,7 @@ interface InputChangeAction {
 }
 interface SetFormValue {
   type: string;
-  inputs: { [key: string]: { value: string; isValid: boolean } | undefined };
+  inputs: { [key: string]: { value: any; isValid: boolean } | undefined };
   isValid: boolean;
 }
 
@@ -56,7 +56,7 @@ const formReducer = (
 };
 
 export const useForm = (
-  initialInputs: { [key: string]: { value: string; isValid: boolean } },
+  initialInputs: { [key: string]: { value: any; isValid: boolean } },
   initialFormValidity: boolean
 ) => {
   const [formState, dispatch] = useReducer(formReducer, {
@@ -81,7 +81,7 @@ export const useForm = (
   );
 
   const inputHandler = useCallback(
-    (id: string, value: string, isValid: boolean) => {
+    (id: string, value: any, isValid: boolean) => {
       dispatch({
         type: "INPUT_CHANGE",
         inputId: id,

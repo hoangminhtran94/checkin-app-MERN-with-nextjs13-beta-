@@ -18,7 +18,7 @@ exports.signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid inputs, please check your data!", 422));
   }
-  const { name, email, password, image } = req.body;
+  const { name, email, password } = req.body;
 
   let existingUser;
   try {
@@ -34,7 +34,13 @@ exports.signup = async (req, res, next) => {
     );
   }
 
-  const createdUser = new User({ name, email, password, places: [], image });
+  const createdUser = new User({
+    name,
+    email,
+    password,
+    places: [],
+    image: req.file.path,
+  });
 
   try {
     await createdUser.save();
