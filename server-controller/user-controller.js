@@ -1,7 +1,9 @@
 const HttpError = require("../server-models/HttpError/HttpError.model");
 const { validationResult } = require("express-validator");
 const User = require("../server-models/User/User.model");
-
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 exports.getUsers = async (req, res, next) => {
   try {
     const users = await User.find({}, "-password");
@@ -34,10 +36,17 @@ exports.signup = async (req, res, next) => {
     );
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(new HttpError("could not create user, please try again", 500));
+  }
+
   const createdUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     places: [],
     image: req.file.path,
   });
@@ -49,7 +58,20 @@ exports.signup = async (req, res, next) => {
       new HttpError("Something went wrong when creating new account", 500)
     );
   }
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+  } catch (error) {
+    return next(new HttpError("Could not login, please try again", 500));
+  }
+
+  res
+    .status(201)
+    .json({ user: createdUser.toObject({ getters: true }), token });
 };
 
 exports.login = async (req, res, next) => {
@@ -65,11 +87,33 @@ exports.login = async (req, res, next) => {
   if (!existingUser) {
     return next(new HttpError("Email did not exist, please try again", 422));
   }
-  if (existingUser.password !== loginPassword) {
+
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(
+      loginPassword,
+      existingUser.password
+    );
+  } catch (error) {
+    return next(new HttpError("Could not login, please try again", 500));
+  }
+
+  if (!isValidPassword) {
     return next(new HttpError("Password is incorrect, please try again", 422));
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+  } catch (error) {
+    return next(new HttpError("Could not login, please try again", 500));
   }
 
   const user = existingUser.toObject({ getters: true });
   const { password, ...returnUser } = user;
-  res.json({ user: returnUser });
+  res.json({ user: returnUser, token });
 };

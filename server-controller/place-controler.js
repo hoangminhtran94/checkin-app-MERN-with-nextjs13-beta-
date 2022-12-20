@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const { getCoordsForAddress } = require("../server-utils/location");
-
+const fs = require("fs");
 const HttpError = require("../server-models/HttpError/HttpError.model");
 const Place = require("../server-models/Place/Place.model");
 const User = require("../server-models/User/User.model");
@@ -32,7 +32,9 @@ exports.getPlacesByUserId = async (req, res, next) => {
       );
       return next(error);
     }
-    res.json({ places });
+    res.json({
+      places: places.map((place) => place.toObject({ getters: true })),
+    });
   } catch (error) {
     return next(error);
   }
@@ -92,7 +94,6 @@ exports.updatePlaceById = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid inputs, please check your data!", 422));
   }
-
   const { title, description } = req.body;
   const pid = req.params.pid;
 
@@ -102,13 +103,19 @@ exports.updatePlaceById = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError("Place is not found", 404));
   }
+  if (place.creator.id !== req.userId) {
+    return next(
+      new HttpError("You are not allowed to perform this action", 401)
+    );
+  }
+
   place.description = description;
   place.title = title;
 
   try {
     await place.save();
   } catch (error) {
-    return next(new HttpError("Something went wrong when saving the data"));
+    return next(new HttpError("Something went wrong when deleting the data"));
   }
   res.status(201).json({ place });
 };
@@ -124,7 +131,16 @@ exports.deletePlaceById = async (req, res, next) => {
   if (!place) {
     return next(new HttpError("Place does not exist", 422));
   }
-
+  if (place.creator.id !== req.userId) {
+    return next(
+      new HttpError("You are not allowed to perform this action", 401)
+    );
+  }
+  try {
+    fs.unlink(place.imageUrl);
+  } catch (error) {
+    return next(new HttpError("Something went wrong when saving the data"));
+  }
   try {
     const session = await mongoose.startSession();
     session.startTransaction();

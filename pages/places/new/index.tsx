@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import classes from "./NewPlace.module.css";
 import Input from "../../../components/shared/FormElements/Input/Input";
 import {
@@ -13,11 +13,17 @@ import { User } from "../../../models/user.models";
 import { useHttpClient } from "../../../components/shared/hooks/use-http";
 import LoadingSpinner from "../../../components/shared/LoadingSpinner/LoadingSpinner";
 import ImageUpload from "../../../components/shared/ImageUpload/ImageUpload";
+import { useRouter } from "next/router";
 
 const NewPlace = () => {
+  const router = useRouter();
   const currentUser = useSelector<RootState, User>(
     (state) => state.auth.currentUser
   );
+  const authenticated = useSelector<RootState, boolean>(
+    (state) => state.auth.authenticated
+  );
+  const token = useSelector<RootState, string>((state) => state.auth.token);
   const { sendRequest, isLoading } = useHttpClient();
   const { formState, inputHandler } = useForm(
     {
@@ -37,10 +43,18 @@ const NewPlace = () => {
     formData.append("address", formState.inputs.address.value);
     formData.append("image", formState.inputs.image.value);
     formData.append("creator", currentUser.id);
-    console.log(formState);
-    await sendRequest("http://localhost:5000/api/places", "POST", formData);
+    await sendRequest("http://localhost:5000/api/places", "POST", formData, {
+      Authorization: "Bearer " + token,
+    });
   };
-
+  useEffect(() => {
+    if (!authenticated) {
+      router.push("/auth");
+    }
+  }, [authenticated, router]);
+  if (!authenticated) {
+    return <div className="center">Redirecting</div>;
+  }
   return (
     <div className={classes["new-place-container"]}>
       {isLoading && <LoadingSpinner asOverlay />}

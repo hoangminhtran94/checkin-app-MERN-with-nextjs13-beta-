@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import { toggleErrorToast } from "./../../store/actionStatus";
 import { useTypedDispatch } from "../../store";
 import LoadingSpinner from "../../components/shared/LoadingSpinner/LoadingSpinner";
+import { loginAndSetToken } from "./../../store/auth";
 const Auth = () => {
   const dispatch = useDispatch();
   const dispatchThunk = useTypedDispatch();
@@ -60,17 +61,17 @@ const Auth = () => {
         const responseData = await response.json(0);
         throw new Error(responseData.message);
       }
-      const responseData: { user: User } = await response.json();
-      dispatch(
-        authActions.login({
-          currentUser: responseData.user,
-          authenticated: true,
-        })
+      const responseData: { user: User; token: string } = await response.json();
+      dispatchThunk(
+        loginAndSetToken(
+          responseData.user,
+          !!responseData.token,
+          responseData.token
+        )
       );
       setIsLoading(false);
       router.push("/");
     } catch (error) {
-      console.log(error);
       setIsLoading(false);
       dispatchThunk(toggleErrorToast(error.message));
     }

@@ -12,17 +12,19 @@ import {
 } from "../../../components/shared/utils/validators";
 import { useForm } from "../../../components/shared/hooks/form-hook";
 import Card from "../../../components/shared/UIElements/Card/Card";
-
+import { useHttpClient } from "../../../components/shared/hooks/use-http";
+import LoadingSpinner from "../../../components/shared/LoadingSpinner/LoadingSpinner";
 const UpdatePlace = () => {
   const [loading, setLoading] = useState(true);
   const places = useSelector<RootState, Place[]>((state) => state.place.places);
+  const token = useSelector<RootState, string>((state) => state.auth.token);
   const router = useRouter();
   const placeId = router.query.pid;
   const identifiedPlace = useMemo(
     () => places.find((place) => place.id === placeId),
     [placeId, places]
   );
-
+  const { isLoading, sendRequest } = useHttpClient();
   const { formState, inputHandler, setFormState } = useForm(
     {
       title: {
@@ -57,9 +59,21 @@ const UpdatePlace = () => {
     setLoading(false);
   }, [identifiedPlace, setFormState]);
 
-  const submitHandler = (event: React.FormEvent) => {
+  const submitHandler = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log(formState.inputs);
+    await sendRequest(
+      `http://localhost:5000/api/places/${identifiedPlace.id}`,
+      "PATCH",
+      JSON.stringify({
+        title: formState.inputs.title.value,
+        description: formState.inputs.description.value,
+      }),
+      {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      }
+    );
+    router.push(`/${identifiedPlace.creator}/places`);
   };
   if (!identifiedPlace) {
     return (
@@ -80,6 +94,7 @@ const UpdatePlace = () => {
 
   return (
     <form className={classes["place-form"]} onSubmit={submitHandler}>
+      {isLoading && <LoadingSpinner asOverlay />}
       <Input
         id="title"
         element="input"
@@ -103,7 +118,12 @@ const UpdatePlace = () => {
         initialValue={formState.inputs.description!.value}
         initialValidity={formState.inputs.description!.isValid}
       />
-      <Button type="submit" disabled={!formState.isValid}>
+      <Button
+        className={classes["update-button"]}
+        size="small"
+        type="submit"
+        disabled={!formState.isValid}
+      >
         UPDATE
       </Button>
     </form>

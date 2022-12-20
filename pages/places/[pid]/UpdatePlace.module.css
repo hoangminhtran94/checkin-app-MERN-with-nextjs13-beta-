@@ -7,4 +7,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
   border-radius: 6px;
   background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.update-button {
+  margin: 0 auto;
 }

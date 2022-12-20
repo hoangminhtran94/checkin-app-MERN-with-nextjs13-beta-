@@ -3,9 +3,13 @@ const placeApiController = require("../server-controller/place-controler");
 const { check } = require("express-validator");
 const { fileUpload } = require("../server-middlerware/file-upload");
 const router = express.Router();
+const checkAuth = require("../server-middlerware/auth");
 router.get("/", placeApiController.getAllPlaces);
 router.get("/:pid", placeApiController.getPlaceById);
 router.get("/user/:uid", placeApiController.getPlacesByUserId);
+
+router.use(checkAuth);
+
 router.post(
   "/",
   fileUpload.single("image"),

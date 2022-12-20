@@ -5,6 +5,13 @@ import Card from "../../shared/UIElements/Card/Card";
 import Button from "../../shared/FormElements/Button/Button";
 import Modal from "../../shared/UIElements/Modal/Modal";
 import Map from "../../shared/UIElements/Map/Map";
+import { useHttpClient } from "../../shared/hooks/use-http";
+import type { RootState } from "../../../store";
+import { useSelector } from "react-redux";
+import LoadingSpinner from "../../shared/LoadingSpinner/LoadingSpinner";
+import { User } from "../../../models/user.models";
+import { useDispatch } from "react-redux";
+import { placeActions } from "../../../store/place";
 interface PlaceItemProps {
   id: string;
   image: string;
@@ -23,8 +30,17 @@ const PlaceItem: React.FC<PlaceItemProps> = ({
   creatorId,
   coordinates,
 }) => {
+  const token = useSelector<RootState, string>((state) => state.auth.token);
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector<RootState, boolean>(
+    (state) => state.auth.authenticated
+  );
+  const currentUser = useSelector<RootState, User>(
+    (state) => state.auth.currentUser
+  );
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const { isLoading, sendRequest } = useHttpClient();
   const openMapHandler = () => {
     setShowMap(true);
   };
@@ -34,7 +50,16 @@ const PlaceItem: React.FC<PlaceItemProps> = ({
   const showDeleteWarningHandler = () => {
     setShowConfirmModal(true);
   };
-  const confirmDeleteHandler = () => {
+  const confirmDeleteHandler = async () => {
+    await sendRequest(
+      `http://localhost:5000/api/places/${id}`,
+      "DELETE",
+      undefined,
+      {
+        Authorization: "Bearer " + token,
+      }
+    );
+    dispatch(placeActions.deleteAPlace(id));
     setShowConfirmModal(false);
   };
   const cancelDeleteHandler = () => {
@@ -43,6 +68,7 @@ const PlaceItem: React.FC<PlaceItemProps> = ({
   return (
     <>
       <li className={classes["place-item"]}>
+        {isLoading && <LoadingSpinner asOverlay />}
         <Card className={classes["place-item__content"]}>
           <div className={classes["place-item__image"]}>
             <Image
@@ -61,10 +87,14 @@ const PlaceItem: React.FC<PlaceItemProps> = ({
             <Button inverse onClick={openMapHandler}>
               View on map
             </Button>
-            <Button to={`/places/${id}`}>Edit</Button>
-            <Button danger onClick={showDeleteWarningHandler}>
-              Delete
-            </Button>
+            {isAuthenticated && currentUser.id === creatorId && (
+              <>
+                <Button to={`/places/${id}`}>Edit</Button>
+                <Button danger onClick={showDeleteWarningHandler}>
+                  Delete
+                </Button>
+              </>
+            )}
           </div>
         </Card>
       </li>

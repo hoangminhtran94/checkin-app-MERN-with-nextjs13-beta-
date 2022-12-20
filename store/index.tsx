@@ -26,7 +26,10 @@ const masterReducer = (
   if (action.type === HYDRATE) {
     const nextState = {
       ...state,
-      place: { ...state.place, places: action.payload.place.places },
+      place: {
+        ...state.place,
+        places: action.payload.place.places,
+      },
       user: { ...state.user, users: action.payload.user.users },
       actionStatus: action.payload.actionStatus,
     };
